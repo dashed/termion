@@ -32,12 +32,15 @@ fn tiocgwinsz() -> u32 {
 pub fn terminal_size() -> io::Result<(u16, u16)> {
     use libc::ioctl;
     use libc::STDOUT_FILENO;
+    use libc::c_int;
 
     use std::mem;
     unsafe {
         let mut size: TermSize = mem::zeroed();
 
-        if ioctl(STDOUT_FILENO, tiocgwinsz(), &mut size as *mut _) == 0 {
+        let __tiocgwinsz: c_int = tiocgwinsz() as c_int;
+
+        if ioctl(STDOUT_FILENO, __tiocgwinsz, &mut size as *mut _) == 0 {
             Ok((size.col as u16, size.row as u16))
         } else {
             Err(io::Error::new(io::ErrorKind::Other, "Unable to get the terminal size."))
